@@ -180,7 +180,8 @@ EMAIL_USE_TLS = config("EMAIL_USE_TLS", default=False)
 # -----------------------------------------------------------------------------
 LOGGING = {
     "version": 1,
-    "disable_existing_loggers": True,
+    "disable_existing_loggers": False,
+    "root": {"level": "INFO", "handlers": ["console"]},
     "formatters": {
         "standard": {
             "format": "[%(asctime)s] %(levelname)s [%(name)s:%(lineno)s] %(message)s",
@@ -200,10 +201,10 @@ LOGGING = {
             "level": "INFO",
             "propagate": True,
         },
-        "": {
+        "django.server": {
             "handlers": ["console"],
             "level": "INFO",
-            "propagate": False,
+            "propagate": True,
         },
     },
 }
