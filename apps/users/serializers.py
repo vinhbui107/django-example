@@ -18,7 +18,7 @@ class UserInfoSerializer(serializers.ModelSerializer):
         User = get_user_model()
         model = User
 
-        fields = ("uuid", "username", "email", "date_joined", "last_login")
+        fields = ("username", "email", "is_staff", "date_joined", "last_login")
 
 
 class LoginSerializer(TokenObtainPairSerializer):
@@ -45,9 +45,7 @@ class RegisterSerializer(serializers.Serializer):
             username_not_taken_validator,
         ],
     )
-    password = serializers.CharField(
-        max_length=128, validators=[validate_password]
-    )
+    password = serializers.CharField(max_length=128, validators=[validate_password])
     email = serializers.EmailField(
         required=False,
         validators=[email_not_taken_validator],
