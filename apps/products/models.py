@@ -6,11 +6,10 @@ class Product(models.Model):
 
     price = models.DecimalField(max_digits=12, decimal_places=2, default=0.0)
     stock = models.PositiveIntegerField(default=0)
-    notes = models.TextField(blank=False, null=True)
+    notes = models.TextField(blank=True)
+    is_active = models.BooleanField(default=True)
 
-    created_at = models.DateTimeField(
-        editable=False, auto_now_add=True, db_index=True
-    )
+    created_at = models.DateTimeField(editable=False, auto_now_add=True)
     modified_at = models.DateTimeField(auto_now=True)
 
     class Meta:
@@ -20,3 +19,12 @@ class Product(models.Model):
 
     def __str__(self):
         return self.name
+
+    def save(self, *args, **kwargs):
+
+        if self.stock > 0:
+            self.is_active = True
+        else:
+            self.is_active = False
+
+        super(Product, self).save(*args, **kwargs)

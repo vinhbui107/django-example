@@ -1,6 +1,7 @@
 from uuid import uuid4
 
 from django.db import models
+from django.db.models.expressions import F
 from django.utils import timezone
 from django.contrib.auth.models import PermissionsMixin
 from django.contrib.auth.base_user import AbstractBaseUser, BaseUserManager
@@ -10,12 +11,13 @@ from rest_framework.exceptions import AuthenticationFailed, ValidationError
 
 class UserManager(BaseUserManager):
     def _create_user(
-        self, email, password, is_staff, is_superuser, **extra_fields
+        self, username, email, password, is_staff, is_superuser, **extra_fields
     ):
         """
         Creates and saves a User with the given username, email and password.
         """
         user = self.model(
+            username=username,
             email=self.normalize_email(email),
             is_active=True,
             is_staff=is_staff,
@@ -26,36 +28,28 @@ class UserManager(BaseUserManager):
         user.save(using=self._db)
         return user
 
-    def create_user(self, email=None, password=None, **extra_fields):
+    def create_user(self, username, email=None, password=None, **extra_fields):
         is_staff = extra_fields.pop("is_staff", False)
         is_superuser = extra_fields.pop("is_superuser", False)
         return self._create_user(
-            email, password, is_staff, is_superuser, **extra_fields
+            username, email, password, is_staff, is_superuser, **extra_fields
         )
 
-    def create_superuser(self, email, password, **extra_fields):
+    def create_superuser(self, username, email=None, password=None, **extra_fields):
         return self._create_user(
-            email, password, is_staff=True, is_superuser=True, **extra_fields
+            username, email, password, is_staff=True, is_superuser=True, **extra_fields
         )
 
 
 class User(AbstractBaseUser, PermissionsMixin):
-    uuid = models.UUIDField(default=uuid4(), editable=False, unique=True)
     username = models.CharField(
-        verbose_name="Username",
         max_length=150,
         unique=True,
         error_messages={
             "unique": "A user with that username already exists.",
         },
     )
-    email = models.EmailField(
-        verbose_name="Email",
-        unique=True,
-        max_length=255,
-        blank=False,
-        null=True,
-    )
+    email = models.EmailField(unique=True, max_length=255, blank=True)
 
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
@@ -66,7 +60,6 @@ class User(AbstractBaseUser, PermissionsMixin):
     # Fields settings
     EMAIL_FIELD = "email"
     USERNAME_FIELD = "username"
-    REQUIRED_FIELDS = []
 
     class Meta:
         db_table = "user"
@@ -124,4 +117,6 @@ class User(AbstractBaseUser, PermissionsMixin):
     def delete_with_password(self, password):
         if not self.check_password(password):
             raise AuthenticationFailed("Wrong password.")
-        self.delete()
+
+        self.is_active = False
+        self.save()
