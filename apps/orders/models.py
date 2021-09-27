@@ -32,6 +32,22 @@ class Order(models.Model):
     def __str__(self):
         return str(self.id)
 
+    def save(self, *args, **kwargs):
+
+        new_amount = (
+            OrderItem.objects.all()
+            .select_related("product")
+            .select_related("order")
+            .filter(order=self.id)
+            .aggregate(
+                amount=models.Sum(models.F("quantity") * models.F("product__price"))
+            )
+        )["amount"] or 0
+
+        self.amount = new_amount
+
+        super(Order, self).save(*args, **kwargs)
+
 
 class OrderItem(models.Model):
     product = models.ForeignKey(
