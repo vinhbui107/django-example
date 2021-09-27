@@ -2,6 +2,10 @@ runserver:
 	@echo "🚀 Go to the moon"
 	python3 manage.py runserver
 
+create_superuser:
+	@echo "👨‍🔧 Creating Supperuser"
+	python3 manage.py createsuperuser
+
 apply_migrations:
 	@echo "👨‍🔧 Applying migrations"
 	python3 manage.py makemigrations
@@ -11,7 +15,7 @@ apply_migrations:
 
 	@echo "✅ All done"
 
-reset_data:
+reset_database:
 	@echo "👨‍🔧 Clearing all tables and create new Database"
 	python3 manage.py flush --noinput
 
