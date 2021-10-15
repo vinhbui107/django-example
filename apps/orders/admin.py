@@ -10,7 +10,7 @@ def update_status_completed(modeladmin, request, queryset):
 
 class OrderItemInline(admin.TabularInline):
     model = OrderItem
-    extra = 3
+    extra = 0
 
 
 @admin.register(Order)
@@ -29,4 +29,10 @@ class OrderAdmin(admin.ModelAdmin):
 
     inlines = [OrderItemInline]
 
-    readonly_fields = ["buyer", "amount", "modified_at", "created_at"]
+    readonly_fields = ["amount", "modified_at", "created_at"]
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        if request.user.is_superuser:
+            return qs
+        return qs.filter(author=request.user)
